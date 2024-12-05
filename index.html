@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send OTP with Outlook Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Send OTP Using Microsoft Outlook</h1>
+        </header>
+        
+        <main>
+            <section>
+                <h2>1. Prerequisites</h2>
+                <ul>
+                    <li>A Microsoft Outlook account with a valid email and password.</li>
+                    <li>Node.js installed on your system.</li>
+                    <li>Libraries: <code>nodemailer</code>.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>2. Install Dependencies</h2>
+                <p>Run the following command in your Node.js project to install <code>nodemailer</code>:</p>
+                <pre><code>npm install nodemailer</code></pre>
+            </section>
+
+            <section>
+                <h2>3. Configure the Mailer</h2>
+                <p>Create a file named <code>mailer.js</code> and include the following code:</p>
+                <pre><code>
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    service: 'Outlook',
+    auth: {
+        user: 'your-email@outlook.com', // Your Outlook email
+        pass: 'your-email-password'    // Your Outlook email password
+    }
+});
+
+const sendMail = (email, code) => {
+    const mailOptions = {
+        from: 'your-email@outlook.com',
+        to: email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${code}`
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendMail };
+                </code></pre>
+                <p>Replace <code>your-email@outlook.com</code> and <code>your-email-password</code> with your Outlook account details.</p>
+            </section>
+
+            <section>
+                <h2>4. Generate OTP</h2>
+                <p>Create a file named <code>generateCode.js</code> with the following code:</p>
+                <pre><code>
+const generateCode = (length) => {
+    const min = Math.pow(10, length - 1); // Smallest number with the desired length
+    const max = Math.pow(10, length) - 1; // Largest number with the desired length
+    return Math.floor(Math.random() * (max - min + 1)) + min; // Generate random number
+};
+
+module.exports = { generateCode };
+                </code></pre>
+            </section>
+
+            <section>
+                <h2>5. Use the Mailer in Your Application</h2>
+                <p>In your main application, include the following logic:</p>
+                <pre><code>
+const express = require('express');
+const { sendMail } = require('./mailer');
+const { generateCode } = require('./generateCode');
+
+const app = express();
+app.use(express.json());
+
+app.post('/send-otp', async (req, res) => {
+    const { email } = req.body;
+    const otp = generateCode(6);
+
+    try {
+        await sendMail(email, otp);
+        res.send('OTP sent successfully!');
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).send('Failed to send OTP.');
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Server running on http://localhost:3000');
+});
+                </code></pre>
+            </section>
+
+            <section>
+                <h2>6. Test the Application</h2>
+                <p>Start your server and use tools like Postman or CURL to test the <code>/send-otp</code> endpoint:</p>
+                <pre><code>
+POST http://localhost:3000/send-otp
+Content-Type: application/json
+
+{
+    "email": "recipient-email@domain.com"
+}
+                </code></pre>
+                <p>Check the recipient's inbox for the OTP email.</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Send OTP Guide</p>
+        </footer>
+    </div>
+</body>
+</html>
